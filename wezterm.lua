@@ -14,6 +14,11 @@ local function split(s, delimiter)
     end
     return result;
 end
+-- extract_command pulls the actual command from between '<bash:' and '>'
+local function extract_command(uri)
+  local _, _, command = string.find(uri, "<bash:(.*)>")
+  return command;
+end
 
 -- shell_interactive_commands is a table (array) of functions that are run
 -- on fired events for 'user-var-changed' (see below)
@@ -135,6 +140,37 @@ return {
     { key = 'l', mods = 'ALT|CMD', action = act.ActivateTabRelative(1) },
     { key = ';', mods = 'ALT|CMD', action = wezterm.action.ShowTabNavigator },
   },
+  hyperlink_rules = {
+    -- These are the default rules, but you currently need to repeat
+    -- them here when you define your own rules, as your rules override
+    -- the defaults
+
+    -- URL with a protocol
+    {
+      regex = "\\b\\w+://(?:[\\w.-]+)\\.[a-z]{2,15}\\S*\\b",
+      format = "$0",
+    },
+
+    -- implicit mailto link
+    {
+        regex = "\\b\\w+@[\\w-]+(\\.[\\w-]+)+\\b",
+        format = "mailto:$0",
+    },
+
+    -- custom rules below
+    -- this rule matchs our custom '<bash:command>' output
+    -- format is the underlying URI that gets passed into the 'on:open-uri' trigger
+    -- it would be very fun if the entire thing could be replaced with a explicitHyperlink!
+    -- what a screen space saver that would be.  Potentially could change the output to be
+    -- GLGJp(projectID)l(logID) and format = "<bash:gitlab-tool get job -p $1 -l $2"
+    -- the output would just be 'GLGJp2456l1235674' which would be underlined as a clickable
+    -- would be easy to match on that for sure, though it would mean ALL custom regex matches...
+    -- worth it?
+    {
+      regex = "<bash:(.*)>",
+      format = "$0"
+    },
+  },
 
   -- format-window-title is a triggered event that renders the 'window' title
   wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
@@ -204,7 +240,22 @@ return {
       shell_interactive_commands[cmd_context.cmd](window, pane, cmd_context)
       return
     end
-  end)
+  end),
+
+  wezterm.on("open-uri", function(window, pane, uri)
+    local bash_command = extract_command(uri)
+    if bash_command ~= nil then
+      -- for pane_index, pane in ipairs(tab:panes_with_info()) do
+      --    if pane.is_active then
+      --     -- send some commands to the new pane, to set some defaults based on
+      --     -- what we are working on, this works surprisingly well
+          pane:send_text(bash_command)
+      --   end
+      -- end
+      -- prevent the default action from opening in a browser
+      return false
+    end
+  end),
 
 }
 

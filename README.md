@@ -18,9 +18,10 @@ the window/tab.
   - this may need to be driven through the `shell-interactive-commands` mechanism, so the launch commands and exports can be done
 - [ ] Launching with multiple PANE definitions
   - I use itermp to accomplish this with iTerm2, though I don't use it nearly as much anymore
-- [ ] Duplicate SmartSelectionRules `<bash:command param1 -switch1>`
+- [x] Duplicate SmartSelectionRules `<bash:command param1 -switch1>`
   - I use this to make clickables that drop a command between `<bash:` and `>` back onto my command line
   - Personal CLI tools that I write will output this way, to allow quick clicks to drill into next commands
+  - Turns out this mechanism works better, no key to hold down, clickable links just work
 
 ## Files
 
