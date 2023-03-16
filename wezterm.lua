@@ -170,10 +170,20 @@ return {
       regex = "<bash:(.*)>",
       format = "$0"
     },
+    -- Cannot have your cake and eat it too... one or the other on this one
+    -- there doesn't seem to be a way to make a certain portion of the match
+    -- be the LINK, it uses the entire $0 match as the UNDERLINING for the
+    -- link to be active.  Since we need the first column field for both of
+    -- these to use in the URI format, it is a no-go
     {
-      regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+.*Running",
-      format = "<bash:k exec -it $1 -n ${NAMESPACE} -- /bin/bash>"
+      -- regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+.*Running",
+      regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+[0-9]+/[0-9]+\\s+",
+      format = "<bash:$1>"
     },
+    -- {
+    --   regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+.*Running",
+    --   format = "<bash:k exec -it $1 -n ${NAMESPACE} -- /bin/bash>"
+    -- },
   },
 
   -- format-window-title is a triggered event that renders the 'window' title
