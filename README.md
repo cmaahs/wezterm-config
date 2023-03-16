@@ -22,6 +22,11 @@ the window/tab.
   - I use this to make clickables that drop a command between `<bash:` and `>` back onto my command line
   - Personal CLI tools that I write will output this way, to allow quick clicks to drill into next commands
   - Turns out this mechanism works better, no key to hold down, clickable links just work
+- [ ] Adjust my `save-session`, aliases `ss` and `gj` to handle saving to `~/Work/${ITERM_PROFILE}/restore-session-${TODAY}`
+  - Need an ITERM_PROFILE replacement
+  - Need some ability to determine the current TAB order when closed
+- [ ] iTerm2 has the ability to LOG sessions, as I'm sure does WexTerm.
+  - Currently when enabled logging to `~/Work/${ITERM_PROFILE}/log/${SESSION_ID}.log`
 
 ## Files
 
