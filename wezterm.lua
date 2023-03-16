@@ -170,6 +170,10 @@ return {
       regex = "<bash:(.*)>",
       format = "$0"
     },
+    {
+      regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+.*Running",
+      format = "<bash:k exec -it $1 -n ${NAMESPACE} -- /bin/bash>"
+    },
   },
 
   -- format-window-title is a triggered event that renders the 'window' title
@@ -243,6 +247,7 @@ return {
   end),
 
   wezterm.on("open-uri", function(window, pane, uri)
+    wezterm.log_info('open-uri', uri)
     local bash_command = extract_command(uri)
     if bash_command ~= nil then
       -- for pane_index, pane in ipairs(tab:panes_with_info()) do
