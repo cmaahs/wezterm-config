@@ -27,6 +27,8 @@ the window/tab.
   - Need some ability to determine the current TAB order when closed
 - [ ] iTerm2 has the ability to LOG sessions, as I'm sure does WexTerm.
   - Currently when enabled logging to `~/Work/${ITERM_PROFILE}/log/${SESSION_ID}.log`
+- [x] Convert iTerm2 Color-Scheme to wezterm
+  - Created `Maahsome.toml` scheme file
 
 ## Files
 

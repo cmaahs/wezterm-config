@@ -1,0 +1,34 @@
+[colors]
+ansi = [
+    '#000000',
+    '#ff2600',
+    '#3cdf2b',
+    '#ffe600',
+    '#1477da',
+    '#ff2b6f',
+    '#5f5fff',
+    '#c7c7c7',
+]
+background = '#173347'
+brights = [
+    '#676767',
+    '#f8291c',
+    '#43d326',
+    '#f1cf00',
+    '#6871ff',
+    '#ff76ff',
+    '#a451ea',
+    '#fffefe',
+]
+cursor_bg = '#f4d200'
+cursor_border = '#f4d200'
+cursor_fg = '#fefef4'
+foreground = '#fffefe'
+selection_bg = '#1f4461'
+selection_fg = '#c1c1c1'
+
+[colors.indexed]
+
+[metadata]
+name = 'Maahsome'
+origin_url = 'https://github.com/cmaahs/wezterm-config'

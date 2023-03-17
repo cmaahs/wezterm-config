@@ -124,14 +124,14 @@ return {
       { family = "Apple Color Emoji", weight="Regular", stretch="Normal", style="Normal" },
   },
   font_size = 22.0,
-  -- TODO: compare to my custom Cobalt2 I created for iTerm2
-  color_scheme = "Cobalt2",
+  color_scheme = "Maahsome",
   use_fancy_tab_bar = true,  -- this is actually default
   tab_max_width = 100,  -- this will truncate the length of the titles in the tabs
   window_frame = {
     -- font = wezterm.font { family = 'Roboto Mono Light for Powerline', weight = 'Light' },
     -- this font is a bit bigger, the TAB bar is quite small
     font = wezterm.font { family = 'Noto Sans', weight = 'Regular' },
+    font_size = 16.0,
   },
   keys = {
     { key = 'j', mods = 'ALT|CMD', action = act.ActivateWindowRelative(-1) },
@@ -152,10 +152,10 @@ return {
     },
 
     -- implicit mailto link
-    {
-        regex = "\\b\\w+@[\\w-]+(\\.[\\w-]+)+\\b",
-        format = "mailto:$0",
-    },
+    -- {
+    --     regex = "\\b\\w+@[\\w-]+(\\.[\\w-]+)+\\b",
+    --     format = "mailto:$0",
+    -- },
 
     -- custom rules below
     -- this rule matchs our custom '<bash:command>' output
@@ -179,6 +179,18 @@ return {
       -- regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+.*Running",
       regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+[0-9]+/[0-9]+\\s+",
       format = "<bash:$1>"
+    },
+    {
+      regex = "/dev/(.*)\\b",
+      format = "<bash:$1>"
+    },
+    {
+      regex = "gs://(.*)/",
+      format = "<bash:$0>"
+    },
+    {
+      regex = "\\b(TSAASPD-[0-9]+)\\b",
+      format = "https://alteryx.atlassian.net/browse/$0"
     },
     -- {
     --   regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+.*Running",
