@@ -29,7 +29,8 @@ the window/tab.
   - Currently when enabled logging to `~/Work/${ITERM_PROFILE}/log/${SESSION_ID}.log`
 - [x] Convert iTerm2 Color-Scheme to wezterm
   - Created `Maahsome.toml` scheme file
-- [ ] iTerm2 has a password manager, not super important, though I had it so that it automatically pops up the password manager when the shell is prompting to unlock and RSA key file.  It was nice though.
+- [x] iTerm2 has a password manager, not super important, though I had it so that it automatically pops up the password manager when the shell is prompting to unlock and RSA key file.  It was nice though.
+  - Using a custom key binding, and EmitEvent to use `security` and `send_text` to lookup a keyring item and express it to the terminal.  This will work for now, since I use this mostly to not have to type the LONG passphrase on my private key files.
 
 ## Files
 
