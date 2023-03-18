@@ -139,6 +139,7 @@ return {
     font = wezterm.font { family = 'Noto Sans', weight = 'Regular' },
     font_size = 16.0,
   },
+  leader = { key = 'p', mods = 'ALT|CMD', timeout_milliseconds = 1000 },
   keys = {
     { key = 'j', mods = 'ALT|CMD', action = act.ActivateWindowRelative(-1) },
     { key = 'k', mods = 'ALT|CMD', action = act.ActivateWindowRelative(1) },
@@ -150,7 +151,11 @@ return {
     { key = 'h', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Left' },
     { key = 'l', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Right' },
     -- this triggers an event that looks up a keyring item and outputs it through send_text
-    { key = '.', mods = "CMD", action = act.EmitEvent 'trigger-password-input' },
+    -- it seems we will need to define a specific trigger name for a specific keyring
+    -- item that we went to express to the terminal
+    -- Using the LEADER should help a little, it turns out just LEADER can be used
+    -- so the next keypress can be without any modifier
+    { key = 'p', mods = "LEADER", action = act.EmitEvent 'express-rsa-passphrase' },
   },
   hyperlink_rules = {
     -- These are the default rules, but you currently need to repeat
@@ -305,7 +310,7 @@ return {
   -- then popup the window to return the name of the item selected, allowing
   -- this to be more dynamic.
   -- MacOS prompts to unlock the login keyring when required
-  wezterm.on('trigger-password-input', function(window, pane)
+  wezterm.on('express-rsa-passphrase', function(window, pane)
     local success, stdout, stderr = wezterm.run_child_process {
       'security', 'find-generic-password', '-w', '-l',
       '_id_rsa_PassPhrase'
