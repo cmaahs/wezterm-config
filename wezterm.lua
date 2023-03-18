@@ -149,6 +149,8 @@ return {
     { key = 'k', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Down' },
     { key = 'h', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Left' },
     { key = 'l', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Right' },
+    -- this triggers an event that looks up a keyring item and outputs it through send_text
+    { key = '.', mods = "CMD", action = act.EmitEvent 'trigger-password-input' },
   },
   hyperlink_rules = {
     -- These are the default rules, but you currently need to repeat
@@ -295,6 +297,21 @@ return {
       return false
     end
   end),
+
+  -- trigger-password-input is a custom event called by a defined
+  -- keystroke, in this case 'CMD-.' sadly this pushes a SINGLE password as a
+  -- send_text.  It would be nice if there was a method to pop up a window,
+  -- similar to the Launch Menu, allowing one to populate the selection list,
+  -- then popup the window to return the name of the item selected, allowing
+  -- this to be more dynamic.
+  -- MacOS prompts to unlock the login keyring when required
+  wezterm.on('trigger-password-input', function(window, pane)
+    local success, stdout, stderr = wezterm.run_child_process {
+      'security', 'find-generic-password', '-w', '-l',
+      '_id_rsa_PassPhrase'
+    }
+    pane:send_text(stdout)
+  end)
 
 }
 
