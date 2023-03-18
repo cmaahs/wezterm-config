@@ -4,7 +4,8 @@ local act = wezterm.action
 -- this is our way of storing values for specific 'windows' in this case
 -- we could certainly store things specifically for other objects, or even
 -- store complex table objects for each 'window'
-wezterm.GLOBAL.window_jira = wezterm.GLOBAL.window_jira or {}
+local window_info = { jira = "", title = ""}
+wezterm.GLOBAL.window_jira = wezterm.GLOBAL.window_jira or window_info
 
 -- split is just a basic splitter, creating a table (array) out of the splits
 local function split(s, delimiter)
@@ -36,7 +37,7 @@ local shell_interactive_commands = {
     if pwin_id == win_id then
       -- we make a copy of the global table, update an array entry, then copy it back
       local current_jira = wezterm.GLOBAL.window_jira
-      current_jira[win_id] = cmd_context.jira
+      current_jira[win_id] = { jira = cmd_context.jira, title = cmd_context.title }
       wezterm.GLOBAL.window_jira = current_jira
     end
   end,
@@ -75,12 +76,15 @@ local shell_interactive_commands = {
       }
 
       new_tab:set_title(cmd_context.title)
-      local jira_issue = wezterm.GLOBAL.window_jira[win_id] or ""
+      local window_globals = wezterm.GLOBAL.window_jira[win_id] or window_info
+      local jira_issue = window_globals.jira or ""
       for pane_index, pane in ipairs(new_tab:panes_with_info()) do
         if pane.is_active then
-          pane.pane:send_text('export JIRA_ISSUE=' .. jira_issue .. '\n')
-          local lc = split(string.lower(jira_issue),'-')
-          pane.pane:send_text('switch-jira ' .. lc[1] .. '\n')
+          if jira_issue ~= "" then
+            pane.pane:send_text('export JIRA_ISSUE=' .. jira_issue .. '\n')
+            local lc = split(string.lower(jira_issue),'-')
+            pane.pane:send_text('switch-jira ' .. lc[1] .. '\n')
+          end
         end
       end
     end
@@ -98,16 +102,18 @@ local shell_interactive_commands = {
       local win_id = tostring(newtab:window():window_id())
       -- set our GLOBAL to store our passed in JIRA ID
       local current_jira = wezterm.GLOBAL.window_jira
-      current_jira[win_id] = cmd_context.jira
+      current_jira[win_id] = { jira = cmd_context.jira, title = cmd_context.title }
       wezterm.GLOBAL.window_jira = current_jira
       local tab = wezterm.mux.get_tab(newtab:tab_id())
       tab:set_title(cmd_context.title)
       for pane_index, pane in ipairs(tab:panes_with_info()) do
         if pane.is_active then
-          -- send some commands to the new pane, to set some defaults based on
-          -- what we are working on, this works surprisingly well
-          pane.pane:send_text('export JIRA_ISSUE=' .. cmd_context.jira .. '\n')
-          pane.pane:send_text('switch-jira ' .. cmd_context.board .. '\n')
+          if cmd_context.jira ~= "" then
+            -- send some commands to the new pane, to set some defaults based on
+            -- what we are working on, this works surprisingly well
+            pane.pane:send_text('export JIRA_ISSUE=' .. cmd_context.jira .. '\n')
+            pane.pane:send_text('switch-jira ' .. cmd_context.board .. '\n')
+          end
         end
       end
     end
@@ -139,6 +145,10 @@ return {
     { key = 'h', mods = 'ALT|CMD', action = act.ActivateTabRelative(-1) },
     { key = 'l', mods = 'ALT|CMD', action = act.ActivateTabRelative(1) },
     { key = ';', mods = 'ALT|CMD', action = wezterm.action.ShowTabNavigator },
+    { key = 'j', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Up' },
+    { key = 'k', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Down' },
+    { key = 'h', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Left' },
+    { key = 'l', mods = 'SHIFT|CMD', action = act.ActivatePaneDirection 'Right' },
   },
   hyperlink_rules = {
     -- These are the default rules, but you currently need to repeat
@@ -212,9 +222,11 @@ return {
 
     local window_id = tostring(tab.window_id)
     -- use the window_id to fetch our JIRA setting from our GLOBAL table
-    local jira_issue = wezterm.GLOBAL.window_jira[window_id] or ""
+    local window_globals = wezterm.GLOBAL.window_jira[window_id] or window_info
+    local jira_issue = window_globals.jira or ""
+    local window_title = window_globals.title or "Command-Center"
 
-    return zoomed .. index .. jira_issue .. "( " .. tab.tab_title .. " )"
+    return zoomed .. index .. "[ " .. window_title .. " ] " .. " ( " .. tab.tab_title .. " )"
   end),
 
   -- format-tab-title is a triggered event that renders the 'tab' title
