@@ -29,6 +29,7 @@ the window/tab.
   - Currently when enabled logging to `~/Work/${ITERM_PROFILE}/log/${SESSION_ID}.log`
 - [x] Convert iTerm2 Color-Scheme to wezterm
   - Created `Maahsome.toml` scheme file
+- [ ] iTerm2 has a password manager, not super important, though I had it so that it automatically pops up the password manager when the shell is prompting to unlock and RSA key file.  It was nice though.
 
 ## Files
 
