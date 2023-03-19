@@ -21,6 +21,19 @@ local function extract_command(uri)
   return command;
 end
 
+-- close tabs is wrapped in pcall to capture any errors and continue closing
+-- tabs anyway
+local function close_tabs(tab_index, window, pane, active_pane)
+  window:perform_action(
+    act.ActivateTab(tab_index),
+    active_pane
+  )
+  window:perform_action(
+   act.CloseCurrentTab { confirm = false },
+   active_pane
+  )
+end
+
 -- shell_interactive_commands is a table (array) of functions that are run
 -- on fired events for 'user-var-changed' (see below)
 local shell_interactive_commands = {
@@ -80,6 +93,7 @@ local shell_interactive_commands = {
       local jira_issue = window_globals.jira or ""
       for pane_index, pane in ipairs(new_tab:panes_with_info()) do
         if pane.is_active then
+          pane.pane:send_text('export WINDOW_TITLE=' .. window_globals.title .. '\n')
           if jira_issue ~= "" then
             pane.pane:send_text('export JIRA_ISSUE=' .. jira_issue .. '\n')
             local lc = split(string.lower(jira_issue),'-')
@@ -108,12 +122,110 @@ local shell_interactive_commands = {
       tab:set_title(cmd_context.title)
       for pane_index, pane in ipairs(tab:panes_with_info()) do
         if pane.is_active then
+          pane.pane:send_text('export WINDOW_TITLE=' .. cmd_context.title .. '\n')
           if cmd_context.jira ~= "" then
             -- send some commands to the new pane, to set some defaults based on
             -- what we are working on, this works surprisingly well
             pane.pane:send_text('export JIRA_ISSUE=' .. cmd_context.jira .. '\n')
             pane.pane:send_text('switch-jira ' .. cmd_context.board .. '\n')
           end
+        end
+      end
+    end
+    return
+  end,
+
+  -- save-sessions will loop through the open tabs of the current window, and
+  -- create a 'restore-session-DATE.sh' named script in a directory that is
+  -- passed in '{ "workdir": "<valid path>"}', then write a command for restoring
+  -- the tabs out to the shell file.
+  -- TODO: validate and create path if it doesn't exist
+  ['save-sessions'] = function(window, pane, cmd_context)
+    local pwin_id = tostring(pane:window():window_id())
+    local win_id = tostring(window:window_id())
+    if pwin_id == win_id then
+      wezterm.log_info('saving sessions', win_id)
+      local pcwd = ''
+      local window_globals = wezterm.GLOBAL.window_jira[win_id] or window_info
+      local jira_issue = window_globals.jira or ""
+      local now = wezterm.time.now():format("%Y%m%d")
+      local name = cmd_context.workdir .. window_globals.title  ..  "/restore-session-" .. now .. ".sh"
+      local f = io.open(name, 'w+')
+      if f ~= nil then
+        wezterm.log_info('window', window)
+        f:write('#!/usr/bin/env zsh' .. '\n\n')
+        f:write('source ~/tbin/wezterm-shell-interactions.sh' .. '\n\n')
+        for tab_index, tab in ipairs(window:mux_window():tabs()) do
+          for pane_index, tab_pane in ipairs(tab:panes_with_info()) do
+            if tab_pane.is_active then
+              pcwd = tab_pane.pane:get_current_working_dir()
+            end
+          end
+          f:write('restt "' .. tab:get_title() .. '" "' .. pcwd:sub(8)  .. '"\n')
+        end
+        f:flush()
+        f:close()
+        if cmd_context.close == 'true' then
+          local tab_count = 1
+          for tab_index, tab in ipairs(window:mux_window():tabs()) do
+            for pane_index, active_pane in ipairs(tab:panes_with_info()) do
+              if active_pane.is_active then
+                local pname = active_pane.pane:get_foreground_process_info()
+                wezterm.log_info('working pane', pane:pane_id())
+                wezterm.log_info('active pane', active_pane.pane:pane_id())
+                wezterm.log_info('closing tab_index', tab_index)
+                wezterm.log_info('pname.name', pname.name)
+                wezterm.log_info('pname.cwd', pname.cwd)
+                if pname.name == "zsh" then
+                  local remove_tab = tab_index - tab_count
+                  if not pcall(close_tabs, remove_tab, window, pane, active_pane.pane) then
+                    wezterm.log_info('save-sessions-faiure', tab_index)
+                  end
+                  wezterm.sleep_ms(250)
+                  -- if the closure fails, this offset will be wrong, and tabs
+                  -- with valid open processes may be closed
+                  -- TODO: fix this if it becomes a problem.
+                  tab_count = tab_count + 1
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+    return
+  end,
+
+  -- save-session will loop through the open tabs of the current window, and
+  -- create a './tabs/tabrestore-tab-DATE-TIME.sh' named script in a directory that is
+  -- passed in '{ "workdir": "<valid path>"}', then write a command for restoring
+  -- the tabs out to the shell file.
+  -- TODO: validate and create path if it doesn't exist
+  ['save-session'] = function(window, pane, cmd_context)
+    local pwin_id = tostring(pane:window():window_id())
+    local win_id = tostring(window:window_id())
+    if pwin_id == win_id then
+      wezterm.log_info('saving session', win_id)
+      local pcwd = ''
+      local window_globals = wezterm.GLOBAL.window_jira[win_id] or window_info
+      local jira_issue = window_globals.jira or ""
+      local now = wezterm.time.now():format("%Y%m%d-%H%M%S")
+      local name = cmd_context.workdir .. window_globals.title  ..  "/tabs/restore-tab-" .. now .. ".sh"
+      local f = io.open(name, 'w+')
+      if f ~= nil then
+        wezterm.log_info('window', window)
+        f:write('#!/usr/bin/env zsh' .. '\n\n')
+        f:write('source ~/tbin/wezterm-shell-interactions.sh' .. '\n\n')
+        pcwd = pane:get_current_working_dir()
+        local tab_title = pane:mux_pane():tab():get_title()
+        f:write('restt "' .. tab_title .. '" "' .. pcwd:sub(8)  .. '"\n')
+        f:flush()
+        f:close()
+        if cmd_context.close == 'true' then
+          window:perform_action(
+            act.CloseCurrentTab { confirm = false },
+            pane
+          )
         end
       end
     end
