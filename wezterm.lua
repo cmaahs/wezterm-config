@@ -154,7 +154,7 @@ local shell_interactive_commands = {
       if f ~= nil then
         wezterm.log_info('window', window)
         f:write('#!/usr/bin/env zsh' .. '\n\n')
-        f:write('source ~/tbin/wezterm-shell-interactions.sh' .. '\n\n')
+        f:write('source /usr/local/bin/wezterm-shell-interactions.sh' .. '\n\n')
         for tab_index, tab in ipairs(window:mux_window():tabs()) do
           for pane_index, tab_pane in ipairs(tab:panes_with_info()) do
             if tab_pane.is_active then
@@ -165,6 +165,7 @@ local shell_interactive_commands = {
         end
         f:flush()
         f:close()
+        os.execute("chmod 700 " .. name)
         if cmd_context.close == 'true' then
           local tab_count = 1
           for tab_index, tab in ipairs(window:mux_window():tabs()) do
@@ -215,12 +216,13 @@ local shell_interactive_commands = {
       if f ~= nil then
         wezterm.log_info('window', window)
         f:write('#!/usr/bin/env zsh' .. '\n\n')
-        f:write('source ~/tbin/wezterm-shell-interactions.sh' .. '\n\n')
+        f:write('source /usr/local/bin/wezterm-shell-interactions.sh' .. '\n\n')
         pcwd = pane:get_current_working_dir()
         local tab_title = pane:mux_pane():tab():get_title()
         f:write('restt "' .. tab_title .. '" "' .. pcwd:sub(8)  .. '"\n')
         f:flush()
         f:close()
+        os.execute("chmod 700 " .. name)
         if cmd_context.close == 'true' then
           window:perform_action(
             act.CloseCurrentTab { confirm = false },
