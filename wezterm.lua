@@ -271,6 +271,13 @@ return {
     -- so the next keypress can be without any modifier
     { key = 'p', mods = "LEADER", action = act.EmitEvent 'express-rsa-passphrase' },
   },
+  quick_select_patterns = {
+    -- m-us-e4-d00001
+    '[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+',
+    -- semver
+    'v[0-9]+\\.[0-9]+\\.[0-9]+',
+    'TSAASPD-[0-9]+',
+  },
   hyperlink_rules = {
     -- These are the default rules, but you currently need to repeat
     -- them here when you define your own rules, as your rules override
@@ -347,7 +354,11 @@ return {
     local jira_issue = window_globals.jira or ""
     local window_title = window_globals.title or "Command-Center"
 
-    return zoomed .. index .. "[ " .. window_title .. " ] " .. " ( " .. tab.tab_title .. " )"
+    if window_title == tab.tab_title then
+      return zoomed .. index .. "[ " .. window_title .. " ]"
+    else
+      return zoomed .. index .. "[ " .. window_title .. " ] " .. " ( " .. tab.tab_title .. " )"
+    end
   end),
 
   -- format-tab-title is a triggered event that renders the 'tab' title
