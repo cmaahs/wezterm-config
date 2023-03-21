@@ -34,6 +34,8 @@ the window/tab.
   - Created `Maahsome.toml` scheme file
 - [x] iTerm2 has a password manager, not super important, though I had it so that it automatically pops up the password manager when the shell is prompting to unlock and RSA key file.  It was nice though.
   - Using a custom key binding, and EmitEvent to use `security` and `send_text` to lookup a keyring item and express it to the terminal.  This will work for now, since I use this mostly to not have to type the LONG passphrase on my private key files.
+- [ ] Can I make it so that COMMAND-T (new tab) will perform the exact same operation as `newt` bash function?
+  - a little too much muscle memory, and `newt` just adds a tab title, which we can just default to `new` or perhaps make it the same as the window title
 
 ## Files
 
