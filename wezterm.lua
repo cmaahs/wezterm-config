@@ -111,7 +111,7 @@ local shell_interactive_commands = {
     local pwin_id = tostring(pane:window():window_id())
     local win_id = tostring(window:window_id())
     if pwin_id == win_id then
-      local newtab, _, _ = wezterm.mux.spawn_window { cwd = cmd_context.cwd }
+      local newtab, _, _ = wezterm.mux.spawn_window { cwd = cmd_context.cwd, width=106, height=27, position = { x = 30, y = 1200, origin = "ActiveScreen" } }
       -- we need the NEW window id of the window that was just created
       local win_id = tostring(newtab:window():window_id())
       -- set our GLOBAL to store our passed in JIRA ID
@@ -158,10 +158,10 @@ local shell_interactive_commands = {
         for tab_index, tab in ipairs(window:mux_window():tabs()) do
           for pane_index, tab_pane in ipairs(tab:panes_with_info()) do
             if tab_pane.is_active then
-              pcwd = tab_pane.pane:get_current_working_dir()
+              pcwd = tab_pane.pane:get_current_working_dir().file_path
             end
           end
-          f:write('restt "' .. tab:get_title() .. '" "' .. pcwd:sub(8)  .. '"\n')
+          f:write('restt "' .. tab:get_title() .. '" "' .. pcwd .. '"\n')
         end
         f:flush()
         f:close()
@@ -217,9 +217,9 @@ local shell_interactive_commands = {
         wezterm.log_info('window', window)
         f:write('#!/usr/bin/env zsh' .. '\n\n')
         f:write('source /usr/local/bin/wezterm-shell-interactions.sh' .. '\n\n')
-        pcwd = pane:get_current_working_dir()
+        pcwd = pane:get_current_working_dir().file_path
         local tab_title = pane:mux_pane():tab():get_title()
-        f:write('restt "' .. tab_title .. '" "' .. pcwd:sub(8)  .. '"\n')
+        f:write('restt "' .. tab_title .. '" "' .. pcwd .. '"\n')
         f:flush()
         f:close()
         os.execute("chmod 700 " .. name)
@@ -329,6 +329,14 @@ return {
     {
       regex = "\\b(TSAASPD-[0-9]+)\\b",
       format = "https://alteryx.atlassian.net/browse/$0"
+    },
+    {
+      regex = "\\b(restore-session.*sh)\\b",
+      format = "<bash:./$0>"
+    },
+    {
+      regex = "run '([^']+)",
+      format = "<bash:$1>"
     },
     -- {
     --   regex = "([A-Za-z0-9]+(-[A-Za-z0-9]+)+)\\s+.*Running",
